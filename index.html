@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<style type="text/css">
+		.alert{
+			background-color: #DDDDFF;
+		}
+		.message > .user{
+			color:blue;
+		}
+	</style>
+	<title></title>
+</head>
+<body>
+	<form id="push">
+		<input type="hidden" name="userId">
+		<input type="text" name="message">
+		<input type="submit" value="send">
+	</form>
+    <div id="chat"></div>
+    <script>
+    	var id;
+    	var ws;
+	    onload=function(){
+			ws = new WebSocket("ws://localhost:8080");
+			ws.onmessage = function(event){
+				data=JSON.parse(event.data);
+				console.log(data);
+				switch(data.type){
+					case 'hello':{
+						id=data.id;
+						chat.innerHTML+='<div class="alert">You have joined this chat!</div>';
+						break;
+					}
+					case 'join':{
+						chat.innerHTML+='<div  class="alert">'+data.id+' has joined us!</div>';
+						break;
+					}
+					case 'message':{
+						chat.innerHTML+='<div class="message"> <span class="user">'+data.id+'</span>:'+data.message+'</div>';
+						break;
+					}
+				}
+	    	}
+	    	document.forms.push.onsubmit=function(){
+	    		if (this.message.value=='')return false;
+	    		ws.send(JSON.stringify({
+	    			id:id,
+	    			message:this.message.value,
+	    		}));
+	    		chat.innerHTML+='<div class="message"> <span class="user">'+id+'</span>:'+this.message.value+'</div>';
+	    		console.log('message is sent')
+	    		this.message.value='';
+	    		return false;
+	    	}
+	    }
+    </script>
+
+</body>
+</html>
